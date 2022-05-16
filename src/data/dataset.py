@@ -37,7 +37,7 @@ class SliderDataset(Dataset):
         x = self.get_melspectrogram(audio_path)
         if self.transform is not None:
             x = self.transform(x)
-        return x, x
+        return x
 
     def get_melspectrogram(self, audio_path):
         # 01 calculate the number of dimensions
@@ -46,14 +46,14 @@ class SliderDataset(Dataset):
         # 02 generate melspectrogram using librosa
         wav, sr = torchaudio.load(audio_path)
         wav = T.AmplitudeToDB()(wav)
-        print(f"{sr=}")
-        print(f"{wav.shape=}")
+        # print(f"{sr=}")
+        # print(f"{wav.shape=}")
         melspec_transformer = T.MelSpectrogram(sample_rate=sr,
                                          n_fft=self.n_fft,
                                          hop_length=self.hop_length,
                                          n_mels=self.n_mels,
                                          power=self.power)
-        res = melspec_transformer(wav).squeeze()
+        res = melspec_transformer(wav).squeeze().T
 
         # 03 convert melspectrogram to log mel energy
         # log_mel_spectrogram = 20.0 / self.power * np.log10(mel_spectrogram + sys.float_info.epsilon)
