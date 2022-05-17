@@ -26,3 +26,26 @@ def vae_loss(recon_x, x, mu, logvar, reconst_loss='mse', a_RECONST=1., a_KLD=1.,
 
     return RECONST*a_RECONST + KLD*a_KLD
 
+def lstm_vae_loss(x, x_recon, mu, logvar, step,
+                  k=0.0025,
+                  x0=2500,
+                  anneal_function="linear"):
+    def kl_anneal_function(anneal_function, step, k, x0):
+        if anneal_function == 'logistic':
+            return float(1/(1 + torch.exp(-k*(step-x0))))
+        elif anneal_function == 'linear':
+            return min(1, step/x0)
+
+    batch_size = x.shape[0]
+    # Negative Log Likelihood
+    mse_loss = F.mse_loss(x, x_recon)
+
+    # KL Divergence
+    KL_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
+    KL_weight = kl_anneal_function(anneal_function, step, k, x0)
+    KL_weight = 1
+    # print(f"{mse_loss=}")
+    # print(f"{KL_loss=}")
+
+    # return NLL_loss, KL_loss, KL_weight
+    return (mse_loss + KL_weight * KL_loss) / batch_size
