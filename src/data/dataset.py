@@ -33,6 +33,7 @@ class SliderDataset(Dataset):
         x = self.get_melspectrogram(audio_path)
         L = x.shape[0]
         if L < self.maxlen:
+            print("im padding")
             x = torch.pad(x, (0, 0, 0, self.maxlen - L))
         elif L > self.maxlen:
             x = x[:self.maxlen, :]
@@ -50,5 +51,7 @@ class SliderDataset(Dataset):
                                          normalized=False)
         res = melspec_transformer(wav).squeeze().T
         res = T.AmplitudeToDB(top_db=80., stype="power")(res)
-
+        min_level_db = -100
+        res = torch.clip((res - min_level_db) / -min_level_db, 0, 1)
+        
         return res

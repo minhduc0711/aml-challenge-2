@@ -18,10 +18,10 @@ class Encoder(nn.Module):
         self.fc_logvar = nn.Linear(h_dim, z_dim)
 
     def forward(self, x):
-        _, (x, _) = self.lstm(x)
-        x = x.squeeze()
-        mu = self.fc_mu(x)
-        logvar = self.fc_logvar(x)
+        _, (hn, _) = self.lstm(x)
+        hn = hn.squeeze()
+        mu = self.fc_mu(hn)
+        logvar = self.fc_logvar(hn)
         return mu, logvar
 
 
@@ -61,8 +61,15 @@ class LSTMVAE(pl.LightningModule):
         x, x_shifted = batch
         x_recon, (mu, logvar) = self(x)
         loss = lstm_vae_loss(x_shifted, x_recon, mu, logvar, self.global_step)
+        self.log("train/loss", loss)
         return loss
+    
+    def validation_step(self, batch, batch_idx):
+        x, x_shifted = batch
+        x_recon, (mu, logvar) = self(x)
+        loss = lstm_vae_loss(x_shifted, x_recon, mu, logvar, self.global_step)
+        self.log("val/loss", loss)
 
     def configure_optimizers(self):
-        opt = torch.optim.Adam(self.parameters(), lr=1e-4)
+        opt = torch.optim.Adam(self.parameters(), lr=1e-3)
         return opt

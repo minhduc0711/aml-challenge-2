@@ -38,14 +38,11 @@ def lstm_vae_loss(x, x_recon, mu, logvar, step,
 
     batch_size = x.shape[0]
     # Negative Log Likelihood
-    mse_loss = F.mse_loss(x, x_recon)
+    mse_loss = F.mse_loss(x, x_recon, reduction="mean")
 
     # KL Divergence
     KL_loss = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     KL_weight = kl_anneal_function(anneal_function, step, k, x0)
-    KL_weight = 1
-    # print(f"{mse_loss=}")
-    # print(f"{KL_loss=}")
 
     # return NLL_loss, KL_loss, KL_weight
-    return (mse_loss + KL_weight * KL_loss) / batch_size
+    return mse_loss + KL_weight * KL_loss / batch_size
