@@ -9,7 +9,8 @@ class SliderDataModule(pl.LightningDataModule):
                  batch_size: int = 32,
                  num_workers=4,
                  normalize=False,
-                 use_cnn=False):
+                 use_cnn=False,
+                 iter_over_cols=False):
         super().__init__()
         data_dir = Path(data_dir)
         self.num_workers = num_workers
@@ -28,7 +29,8 @@ class SliderDataModule(pl.LightningDataModule):
                                 hop_length=hop_length,
                                 power=power,
                                 use_cnn=use_cnn,
-                                normalize=True)
+                                normalize=normalize,
+                                iter_over_cols=iter_over_cols)
         N = len(self.ds)
         num_train = int(0.8 * N)
         num_val = N - num_train
