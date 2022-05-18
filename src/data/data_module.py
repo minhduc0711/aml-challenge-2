@@ -7,7 +7,9 @@ from .dataset import SliderDataset
 class SliderDataModule(pl.LightningDataModule):
     def __init__(self, data_dir="data/raw/",
                  batch_size: int = 32,
-                 num_workers=4):
+                 num_workers=4,
+                 normalize=False,
+                 use_cnn=False):
         super().__init__()
         data_dir = Path(data_dir)
         self.num_workers = num_workers
@@ -24,7 +26,9 @@ class SliderDataModule(pl.LightningDataModule):
                                 frames=frames,
                                 n_fft=n_fft,
                                 hop_length=hop_length,
-                                power=power)
+                                power=power,
+                                use_cnn=use_cnn,
+                                normalize=True)
         N = len(self.ds)
         num_train = int(0.8 * N)
         num_val = N - num_train

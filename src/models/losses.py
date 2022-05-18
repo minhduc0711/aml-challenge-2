@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import numpy as np
 
 
 def vae_loss(recon_x, x, mu, logvar, reconst_loss='mse', a_RECONST=1., a_KLD=1., x_dim=640):
@@ -29,10 +30,10 @@ def vae_loss(recon_x, x, mu, logvar, reconst_loss='mse', a_RECONST=1., a_KLD=1.,
 def lstm_vae_loss(x, x_recon, mu, logvar, step,
                   k=0.0025,
                   x0=2500,
-                  anneal_function="linear"):
+                  anneal_function="logistic"):
     def kl_anneal_function(anneal_function, step, k, x0):
         if anneal_function == 'logistic':
-            return float(1/(1 + torch.exp(-k*(step-x0))))
+            return float(1/(1 + np.exp(-k*(step-x0))))
         elif anneal_function == 'linear':
             return min(1, step/x0)
 
@@ -45,4 +46,5 @@ def lstm_vae_loss(x, x_recon, mu, logvar, step,
     KL_weight = kl_anneal_function(anneal_function, step, k, x0)
 
     # return NLL_loss, KL_loss, KL_weight
-    return mse_loss + KL_weight * KL_loss / batch_size
+    total_loss = mse_loss + KL_weight * KL_loss / batch_size
+    return total_loss, mse_loss, KL_loss, KL_weight

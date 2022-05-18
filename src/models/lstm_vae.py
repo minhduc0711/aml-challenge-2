@@ -58,17 +58,23 @@ class LSTMVAE(pl.LightningModule):
         return x_recon, (mu, logvar)
 
     def training_step(self, batch, batch_idx):
-        x, x_shifted = batch
+        x, x_shifted = batch["input"], batch["target"]
         x_recon, (mu, logvar) = self(x)
-        loss = lstm_vae_loss(x_shifted, x_recon, mu, logvar, self.global_step)
-        self.log("train/loss", loss)
-        return loss
+        total_loss, mse, kl, kl_weight = lstm_vae_loss(x_shifted, x_recon, mu, logvar, self.global_step)
+        self.log("train/loss/total", total_loss)
+        self.log("train/loss/mse", mse)
+        self.log("train/loss/KL", kl)
+        self.log("train/loss/KL_weight", kl_weight)
+        return total_loss
     
     def validation_step(self, batch, batch_idx):
-        x, x_shifted = batch
+        x, x_shifted = batch["input"], batch["target"]
         x_recon, (mu, logvar) = self(x)
-        loss = lstm_vae_loss(x_shifted, x_recon, mu, logvar, self.global_step)
-        self.log("val/loss", loss)
+        total_loss, mse, kl, kl_weight = lstm_vae_loss(x_shifted, x_recon, mu, logvar, self.global_step)
+        self.log("val/loss/total", total_loss)
+        self.log("val/loss/mse", mse)
+        self.log("val/loss/KL", kl)
+        self.log("val/loss/KL_weight", kl_weight)
 
     def configure_optimizers(self):
         opt = torch.optim.Adam(self.parameters(), lr=1e-3)
