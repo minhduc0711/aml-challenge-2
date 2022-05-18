@@ -29,7 +29,7 @@ class SliderDataset(Dataset):
             dirs = [dirs]
         self.dirs = dirs
         self.maxlen = maxlen
-        self.normalize = True
+        self.normalize = normalize
         self.use_cnn = use_cnn
         self.audio_paths = [audio_path for d in self.dirs for audio_path in sorted(Path(d).iterdir())]
         self.prog = re.compile('(\w*)?_?id_(\d*)_(\d*)')
@@ -69,12 +69,13 @@ class SliderDataset(Dataset):
         
         x = self.get_melspectrogram(audio_path)
         L = x.shape[0]
-        if L < self.maxlen:
-            x = torch.pad(x, (0, 0, 0, self.maxlen - L))
-        elif L > self.maxlen:
-            x = x[:self.maxlen, :]
         
         if not self.iter_over_cols:
+            if L < self.maxlen:
+                x = torch.pad(x, (0, 0, 0, self.maxlen - L))
+            elif L > self.maxlen:
+                x = x[:self.maxlen, :]
+
             if self.use_cnn:
                 x = x.unsqueeze(0)
                 res["input"] = x
