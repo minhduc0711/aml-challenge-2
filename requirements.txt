@@ -9,3 +9,6 @@ torchaudio
 torchsummary
 pytorch-lightning
 seaborn
+cmake==3.18.4
+MulticoreTSNE
+gpustat
